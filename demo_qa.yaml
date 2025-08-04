@@ -1,0 +1,54 @@
+metadata:
+  version: "1.0"
+  description: "多模型问答汇总工作流"
+
+input:
+  type: "start"
+  name: "workflow_input"
+  data:
+    question: "用户输入的原始问题"
+
+executors:
+  - name: text_processing
+    type: "task"
+    func: text_process
+    custom_vars:
+      text: "${workflow_input.question}"
+
+  - name: model1_answer
+    type: "task"
+    func: llm_simple_call
+    custom_vars:
+      user_input: "${text_processing.output}"
+      model: "gemma3:1b"
+    depends_on: ["text_processing"]
+
+  - name: model2_answer
+    type: "task"
+    func: llm_simple_call
+    custom_vars:
+      user_input: "${text_processing.output}"
+      model: "gemma3:1b"
+    depends_on: ["text_processing"]
+
+  - name: model3_answer
+    type: "task"
+    func: llm_simple_call
+    custom_vars:
+      user_input: "${text_processing.output}"
+      model: "gemma3:1b"
+    depends_on: ["text_processing"]
+
+  - name: summary_step
+    type: "task"
+    func: llm_simple_call
+    custom_vars:
+      user_input: "请基于以下三个模型的回答，汇总分析什么是人工智能，提取共同点和不同观点\n\n模型1的回答:\n${model1_answer.output}\n\n模型2的回答:\n${model2_answer.output}\n\n模型3的回答:\n${model3_answer.output}"
+      model: "gemma3:4b"
+    depends_on: ["model1_answer", "model2_answer", "model3_answer"]
+
+output:
+  type: "end"
+  name: "workflow_output"
+  data:
+    result: "${summary_step.output}"
