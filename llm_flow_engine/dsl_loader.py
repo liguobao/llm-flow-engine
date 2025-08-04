@@ -126,12 +126,16 @@ def load_workflow_from_dsl(dsl: Union[str, dict], func_map: Dict[str, Callable],
         
         # 从占位符中提取依赖
         output_deps = []
+        executor_names = [exe.name for exe in executors]  # 获取所有执行器名称
+        
         for value in output_data.values():
             if isinstance(value, str):
                 matches = re.findall(r"\$\{(.*?)\}", value)
                 for match in matches:
                     step_name = match.split('.')[0]  # 提取步骤名称
-                    output_deps.append(step_name)
+                    # 只添加实际的执行器依赖，忽略workflow_input等
+                    if step_name in executor_names:
+                        output_deps.append(step_name)
         
         # 确保依赖列表中没有重复
         output_deps = list(set(output_deps))

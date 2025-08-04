@@ -63,8 +63,8 @@ async def demo_basic_usage():
     # 2. 从本地文件读取DSL并执行多模型问答汇总
     print("\n🤖 2. 本地Ollama模型问答汇总演示")
     print("问题: 什么是人工智能？")
-    print("模型: gemma3:4b, qwen2.5, gemma2")
-    print("方案: 三个模型分别回答，然后用gemma3:4b汇总")
+    print("模型: gemma3:1b, qwen2.5:0.5b, deepseek-r1:1.5b")
+    print("方案: 三个小模型分别回答，然后用gemma3:4b汇总分析")
     
     try:
         # 读取本地DSL文件

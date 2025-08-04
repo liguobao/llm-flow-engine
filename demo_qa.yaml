@@ -1,6 +1,6 @@
 metadata:
-  version: "1.0"
-  description: "多模型问答汇总工作流"
+  version: "1.1"
+  description: "基于增强参数传递的多模型问答汇总工作流"
 
 input:
   type: "start"
@@ -39,23 +39,45 @@ executors:
       model: "deepseek-r1:1.5b"
     depends_on: ["text_processing"]
 
-  # 添加组合步骤，将前面三个模型的输出组合成汇总提示
+  # 使用增强的combine_outputs进行智能参数传递和结构化组合
   - name: combine_answers
     type: "task"
     func: combine_outputs
     custom_vars:
-      prompt_template: "请基于以下三个模型的回答，汇总分析什么是人工智能，提取共同点和不同观点\n\n模型1的回答:\n{output1}\n\n模型2的回答:\n{output2}\n\n模型3的回答:\n{output3}"
+      combine_method: "structured"
+      input_mapping:
+        0: "Gemma3-1B模型回答"
+        1: "Qwen2.5-0.5B模型回答"
+        2: "DeepSeek-R1-1.5B模型回答"
+      prompt_template: "请基于以下三个AI模型的回答，汇总分析什么是人工智能，提取共同点和不同观点："
     depends_on: ["model1_answer", "model2_answer", "model3_answer"]
+
+  # 数据流转换，为最终汇总做准备
+  - name: prepare_summary
+    type: "task"
+    func: data_flow_transform
+    custom_vars:
+      transform_rules:
+        - type: "format"
+          template: "多模型分析结果：\n{data}"
+        - type: "aggregate"
+          method: "join"
+          separator: "\n\n=== 深度分析汇总 ===\n\n"
+    depends_on: ["combine_answers"]
 
   - name: summary_step
     type: "task"
     func: llm_simple_call
     custom_vars:
       model: "gemma3:4b"
-    depends_on: ["combine_answers"]
+    depends_on: ["prepare_summary"]
 
 output:
   type: "end"
   name: "workflow_output"
   data:
-    result: "${summary_step.output}"
+    original_question: "${workflow_input.question}"
+    processed_question: "${text_processing.output}"
+    structured_analysis: "${combine_answers.output}"
+    prepared_summary: "${prepare_summary.output}"
+    final_result: "${summary_step.output}"
