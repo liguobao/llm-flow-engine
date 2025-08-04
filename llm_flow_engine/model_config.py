@@ -3,73 +3,40 @@ LLM模型配置数据提供者
 支持多平台模型的统一配置管理
 """
 
-# 默认模型配置
+# 默认模型配置 - 精简版，主要使用本地ollama模型
 DEFAULT_MODEL_PROVIDERS = {
-    # OpenAI模型配置
-    "gpt-3.5-turbo": {
-        "platform": "openai",
-        "api_url": "https://api.openai.com/v1/chat/completions",
-        "auth_header": "Bearer",
-        "message_format": "openai",
-        "max_tokens": 4096,
-        "supports": ["temperature", "top_p", "frequency_penalty", "presence_penalty", "stop"]
-    },
-    "gpt-4": {
-        "platform": "openai",
-        "api_url": "https://api.openai.com/v1/chat/completions",
-        "auth_header": "Bearer",
-        "message_format": "openai",
-        "max_tokens": 8192,
-        "supports": ["temperature", "top_p", "frequency_penalty", "presence_penalty", "stop"]
-    },
-    # Ollama本地模型配置
-    "llama3": {
-        "platform": "ollama",
-        "api_url": "http://localhost:11434/api/chat",
-        "auth_header": None,
-        "message_format": "ollama",
-        "max_tokens": 4096,
-        "supports": ["temperature", "top_p", "top_k"]
-    },
+    # Ollama本地模型配置 - 主要模型
     "gemma3:4b": {
         "platform": "ollama",
         "api_url": "http://localhost:11434/api/chat",
         "auth_header": None,
         "message_format": "ollama",
+        "max_tokens": 8192,
+        "supports": ["temperature", "top_p", "top_k"]
+    },
+    "qwen2.5": {
+        "platform": "ollama",
+        "api_url": "http://localhost:11434/api/chat",
+        "auth_header": None,
+        "message_format": "ollama",
+        "max_tokens": 8192,
+        "supports": ["temperature", "top_p", "top_k"]
+    },
+    "gemma2": {
+        "platform": "ollama",
+        "api_url": "http://localhost:11434/api/chat",
+        "auth_header": None,
+        "message_format": "ollama",
+        "max_tokens": 8192,
+        "supports": ["temperature", "top_p", "top_k"]
+    },
+    # 备用轻量级模型
+    "phi3": {
+        "platform": "ollama",
+        "api_url": "http://localhost:11434/api/chat",
+        "auth_header": None,
+        "message_format": "ollama",
         "max_tokens": 4096,
-        "supports": ["temperature", "top_p", "top_k"]
-    },
-    "qwen3:8b": {
-        "platform": "ollama",
-        "api_url": "http://localhost:11434/api/chat",
-        "auth_header": None,
-        "message_format": "ollama",
-        "max_tokens": 6144,
-        "supports": ["temperature", "top_p", "top_k"]
-    },
-    "gemma3:12b": {
-        "platform": "ollama",
-        "api_url": "http://localhost:11434/api/chat",
-        "auth_header": None,
-        "message_format": "ollama",
-        "max_tokens": 8192,
-        "supports": ["temperature", "top_p", "top_k"]
-    },
-    # Google模型配置
-    "gemini-pro": {
-        "platform": "google",
-        "api_url": "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent",
-        "auth_header": "Bearer",
-        "message_format": "google",
-        "max_tokens": 30720,
-        "supports": ["temperature", "top_p", "top_k"]
-    },
-    "gemini-1.5-pro": {
-        "platform": "google",
-        "api_url": "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent",
-        "auth_header": "Bearer",
-        "message_format": "google",
-        "max_tokens": 8192,
         "supports": ["temperature", "top_p", "top_k"]
     }
 }

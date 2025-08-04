@@ -32,10 +32,38 @@ llm_flow_engine/
 pip install -r requirements.txt
 ```
 
+### 配置Ollama（推荐）
+
+本项目默认使用本地Ollama模型，请先安装和配置：
+
+```bash
+# 1. 安装Ollama
+brew install ollama  # macOS
+# 或访问 https://ollama.ai 下载
+
+# 2. 启动Ollama服务
+ollama serve
+
+# 3. 下载推荐模型
+ollama pull gemma3:4b    # 主力模型
+ollama pull qwen2.5      # 中文优化
+ollama pull gemma2       # 轻量级
+ollama pull phi3         # 代码理解
+```
+
+详细配置说明请参考 `ollama_config.md`
+
 ### 运行演示
 
 ```bash
+# 验证模型配置
+python test_config.py
+
+# 运行完整演示
 python demo_example.py
+
+# 运行基础演示
+python demo.py
 ```
 
 ## API 使用
@@ -69,14 +97,14 @@ executors:
     func: llm_simple_call
     custom_vars:
       user_input: "${workflow_input.question}"
-      model: "gemma3:1b"
+      model: "gemma3:4b"
 
   - name: summary_step
     type: "task"
     func: llm_simple_call
     custom_vars:
       user_input: "请汇总: ${model1_answer.output}"
-      model: "gemma3:4b"
+      model: "qwen2.5"
     depends_on: ["model1_answer"]
 
 output:
@@ -85,11 +113,31 @@ output:
 
 ## 配置说明
 
+### 模型配置文件
+
+本项目提供完整的模型配置系统：
+
+- **`models_config.json`** - 完整的模型配置文件（24个模型）
+- **`json_config_manager.py`** - JSON配置管理器
+- **`integrated_config.py`** - 集成配置提供者
+
+```bash
+# 查看配置演示
+python json_config_manager.py
+
+# 测试集成配置
+python integrated_config.py
+```
+
 ### 支持的模型
 
-- **Ollama 本地模型**: gemma3:1b, gemma3:4b, qwen3:8b
-- **OpenAI 模型**: gpt-3.5-turbo, gpt-4
-- **其他 API 模型**: 可扩展支持
+- **Ollama 本地模型**: gemma3:4b, qwen2.5, gemma2, phi3 等 11个模型
+- **OpenAI 模型**: gpt-3.5-turbo, gpt-4, gpt-4o 等
+- **Anthropic 模型**: claude-3-haiku, claude-3-sonnet, claude-3-opus
+- **Google 模型**: gemini-pro, gemini-1.5-pro
+- **其他平台**: Azure OpenAI, Hugging Face
+
+详细配置说明请参考 `models_config_guide.md`
 
 ### 占位符语法
 

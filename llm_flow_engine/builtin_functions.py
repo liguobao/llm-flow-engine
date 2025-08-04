@@ -36,7 +36,7 @@ def _set_model_provider(provider):
     global _current_model_provider
     _current_model_provider = provider
 
-async def llm_api_call(prompt: str, model: str = "gpt-3.5-turbo", api_key: str = None, 
+async def llm_api_call(prompt: str, model: str = "gemma3:4b", api_key: str = None, 
                       api_url: str = None, **kwargs) -> str:
     """
     通用LLM API调用 - 使用DataProvider模式支持预配置模型
@@ -178,7 +178,7 @@ async def _call_google_api(api_url: str, model: str, messages: list, api_key: st
             else:
                 return f"Google API Error: {resp.status} - {await resp.text()}"
 
-async def llm_simple_call(user_input: str, model: str = "gpt-3.5-turbo", api_key: str = None) -> str:
+async def llm_simple_call(user_input: str, model: str = "gemma3:4b", api_key: str = None) -> str:
     """
     简化的LLM调用
     
@@ -227,7 +227,7 @@ async def llm_simple_call(user_input: str, model: str = "gpt-3.5-turbo", api_key
         temperature=0.7
     )
 
-async def llm_chat_call(messages: list, api_key: str, model: str = "gpt-3.5-turbo", 
+async def llm_chat_call(messages: list, api_key: str, model: str = "gemma3:4b", 
                        system_prompt: str = None, **kwargs) -> str:
     """高级LLM对话调用 - 支持多轮对话和系统提示"""
     if system_prompt:
@@ -377,6 +377,33 @@ async def http_request(url: str, method: str = 'GET', **kwargs):
         raise ValueError(f"不支持的HTTP方法: {method}")
 
 # 基础内置函数映射（不包含模型配置相关函数，这些由引擎注入）
+async def combine_outputs(*args, prompt_template: str = None, **kwargs) -> str:
+    """
+    组合多个输出，支持模板格式化
+    
+    Args:
+        *args: 上游节点的输出
+        prompt_template: 格式化模板，使用 {output1}, {output2}, {output3} 等占位符
+        **kwargs: 其他参数
+    """
+    if not args:
+        return ""
+    
+    if prompt_template:
+        # 创建格式化参数字典
+        format_args = {}
+        for i, output in enumerate(args, 1):
+            format_args[f'output{i}'] = str(output)
+        
+        try:
+            return prompt_template.format(**format_args)
+        except KeyError as e:
+            logger.warning(f"模板格式化失败，缺少占位符: {e}")
+            return str(args[0]) if args else ""
+    else:
+        # 简单拼接所有输出
+        return "\n\n".join(str(arg) for arg in args)
+
 BUILTIN_FUNCTIONS = {
     "http_request_get": http_request_get,
     "http_request_post_json": http_request_post_json,
@@ -389,4 +416,5 @@ BUILTIN_FUNCTIONS = {
     "json_to_string": json_to_string,
     "text_process": text_process,
     "data_merge": data_merge,
+    "combine_outputs": combine_outputs,
 }

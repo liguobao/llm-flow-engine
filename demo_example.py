@@ -22,7 +22,31 @@ async def demo_basic_usage():
             'api_url': 'http://localhost:11434/api/chat',
             'auth_header': None,
             'message_format': 'ollama',
-            'max_tokens': 8000,
+            'max_tokens': 2048,  # 适合1B模型的token限制
+            'supports': ['temperature', 'top_k', 'top_p']
+        },
+        'deepseek-r1:1.5b': {
+            'platform': 'ollama', 
+            'api_url': 'http://localhost:11434/api/chat',
+            'auth_header': None,
+            'message_format': 'ollama',
+            'max_tokens': 4096,  # 1.5B模型可以处理更多token
+            'supports': ['temperature', 'top_k', 'top_p']
+        },
+        'qwen2.5:0.5b': {
+            'platform': 'ollama', 
+            'api_url': 'http://localhost:11434/api/chat',
+            'auth_header': None,
+            'message_format': 'ollama',
+            'max_tokens': 4096,  # 1.5B模型可以处理更多token
+            'supports': ['temperature', 'top_k', 'top_p']
+        },
+        'gemma3:4b': {
+            'platform': 'ollama', 
+            'api_url': 'http://localhost:11434/api/chat',
+            'auth_header': None,
+            'message_format': 'ollama',
+            'max_tokens': 4096,  # 4B模型性能更好
             'supports': ['temperature', 'top_k', 'top_p']
         }
     }
@@ -39,8 +63,8 @@ async def demo_basic_usage():
     # 2. 从本地文件读取DSL并执行多模型问答汇总
     print("\n🤖 2. 本地Ollama模型问答汇总演示")
     print("问题: 什么是人工智能？")
-    print("模型: gemma3:4b, qwen3:8b, gemma3:12b")
-    print("方案: 三个模型分别回答，然后用gemma3:12b汇总")
+    print("模型: gemma3:4b, qwen2.5, gemma2")
+    print("方案: 三个模型分别回答，然后用gemma3:4b汇总")
     
     try:
         # 读取本地DSL文件
@@ -81,7 +105,7 @@ async def demo_basic_usage():
                         print(f"   {display_answer}")
                         model_answers.append(answer)
                     elif name == 'summary_step':
-                        print(f"\n🎯 gemma3:12b 汇总分析:")
+                        print(f"\n🎯 gemma3:4b 汇总分析:")
                         summary_answer = exec_result.output
                         # 截取汇总的前300个字符用于显示
                         display_summary = summary_answer[:300] + "..." if len(summary_answer) > 300 else summary_answer
@@ -95,7 +119,7 @@ async def demo_basic_usage():
                 for key, value in qa_result['output'].items():
                     print(f"   {key}: {value[:100]}..." if len(str(value)) > 100 else f"   {key}: {value}")
             
-            print(f"\n📊 执行统计: {len(model_answers)} 个模型成功回答，gemma3:12b完成汇总")
+            print(f"\n📊 执行统计: {len(model_answers)} 个模型成功回答，gemma3:4b完成汇总")
             
         else:
             print(f"❌ 多模型问答失败: {qa_result['error']}")

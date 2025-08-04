@@ -28,7 +28,7 @@ executors:
     func: llm_simple_call
     custom_vars:
       user_input: "${text_processing.output}"
-      model: "gemma3:1b"
+      model: "qwen2.5:0.5b"
     depends_on: ["text_processing"]
 
   - name: model3_answer
@@ -36,16 +36,23 @@ executors:
     func: llm_simple_call
     custom_vars:
       user_input: "${text_processing.output}"
-      model: "gemma3:1b"
+      model: "deepseek-r1:1.5b"
     depends_on: ["text_processing"]
+
+  # 添加组合步骤，将前面三个模型的输出组合成汇总提示
+  - name: combine_answers
+    type: "task"
+    func: combine_outputs
+    custom_vars:
+      prompt_template: "请基于以下三个模型的回答，汇总分析什么是人工智能，提取共同点和不同观点\n\n模型1的回答:\n{output1}\n\n模型2的回答:\n{output2}\n\n模型3的回答:\n{output3}"
+    depends_on: ["model1_answer", "model2_answer", "model3_answer"]
 
   - name: summary_step
     type: "task"
     func: llm_simple_call
     custom_vars:
-      user_input: "请基于以下三个模型的回答，汇总分析什么是人工智能，提取共同点和不同观点\n\n模型1的回答:\n${model1_answer.output}\n\n模型2的回答:\n${model2_answer.output}\n\n模型3的回答:\n${model3_answer.output}"
       model: "gemma3:4b"
-    depends_on: ["model1_answer", "model2_answer", "model3_answer"]
+    depends_on: ["combine_answers"]
 
 output:
   type: "end"
