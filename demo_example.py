@@ -25,14 +25,6 @@ async def demo_basic_usage():
             'max_tokens': 2048,  # 适合1B模型的token限制
             'supports': ['temperature', 'top_k', 'top_p']
         },
-        'deepseek-r1:1.5b': {
-            'platform': 'ollama', 
-            'api_url': 'http://localhost:11434/api/chat',
-            'auth_header': None,
-            'message_format': 'ollama',
-            'max_tokens': 4096,  # 1.5B模型可以处理更多token
-            'supports': ['temperature', 'top_k', 'top_p']
-        },
         'qwen2.5:0.5b': {
             'platform': 'ollama', 
             'api_url': 'http://localhost:11434/api/chat',

@@ -261,27 +261,46 @@ async def text_process(text: str = None, operation: str = "upper", workflow_inpu
     Returns:
         str: 处理后的文本
     """
+    logger.debug(f"text_process 被调用，text={text}, workflow_input={workflow_input}, kwargs={kwargs}")
+    
+    # 首先尝试从 kwargs 中的 workflow_input 获取
+    if 'workflow_input' in kwargs and isinstance(kwargs['workflow_input'], dict):
+        workflow_input = kwargs['workflow_input']
+        logger.debug(f"从 kwargs 中获取到 workflow_input: {workflow_input}")
+    
     # 优先从 workflow_input 中获取文本
     if workflow_input and isinstance(workflow_input, dict):
-        text = workflow_input.get('question', text)
+        if 'question' in workflow_input:
+            text = workflow_input['question']
+            logger.debug(f"从 workflow_input.question 获取到文本: {text}")
+        elif 'text' in workflow_input:
+            text = workflow_input['text']
+            logger.debug(f"从 workflow_input.text 获取到文本: {text}")
     
     # 如果输入是字典,尝试从 text 字段获取文本
     if isinstance(text, dict):
         text = text.get('text', str(text))
-    elif text is None:
+    elif text is None or text == "":
         # 如果没有提供任何有效输入,返回空字符串
         text = ""
+        logger.debug(f"text_process 最终处理的文本为空")
     else:
         text = str(text)
         
+    logger.debug(f"text_process 最终处理文本: '{text}'")
+        
     # 进行文本处理
     if operation == "upper":
-        return text.upper()
+        result = text.upper()
     elif operation == "lower":
-        return text.lower()
+        result = text.lower()
     elif operation == "reverse":
-        return text[::-1]
-    return text
+        result = text[::-1]
+    else:
+        result = text
+        
+    logger.debug(f"text_process 返回结果: '{result}'")
+    return result
 
 async def data_merge(*args, **kwargs) -> Dict:
     """
