@@ -39,16 +39,7 @@ version:  ## 显示和管理版本
 	./scripts/version.sh
 
 check-git:  ## 检查Git状态
-
-auto-publish:  ## 自动化发布 (完整流程)
-	@echo "🤖 执行自动化发布流程..."
-	python publish_to_pypi.py
-
-version:  ## 显示当前版本
-	@echo "当前版本: $$(python get_version.py)"
-
-check-git:  ## 检查Git状态
-		@echo "📊 Git状态检查..."
+	@echo "📊 Git状态检查..."
 	@git status --porcelain | head -10
 	@echo "当前分支: $$(git branch --show-current)"
 	@echo "最新提交: $$(git log -1 --oneline)"
@@ -63,22 +54,3 @@ setup-dev:  ## 设置开发环境
 	pip install -e ".[dev]"
 	pip install build twine
 	@echo "✅ 开发环境设置完成"
-
-# 发布前完整检查
-pre-publish: clean test check check-git  ## 发布前完整检查
-	@echo "✅ 发布前检查完成"
-
-# 开发环境设置
-setup-dev:  ## 设置开发环境
-	@echo "🛠️  设置开发环境..."
-	pip install -e ".[dev]"
-	pip install build twine
-	@echo "✅ 开发环境设置完成"
-
-# 显示项目信息
-info:  ## 显示项目信息
-	@python project_info.py
-
-# PyPI相关
-pypi-info:  ## 显示PyPI发布信息
-	@python project_info.py pypi
