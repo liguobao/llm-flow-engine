@@ -93,7 +93,7 @@ class Executor:
                 result = await asyncio.wait_for(self.func(*args, **final_kwargs), timeout=self.timeout)
                 logger.debug(f"执行器 {self.name} 的函数返回值: {result}")
                 logger.success(f"执行器 {self.name} 运行成功，用时: {time.time() - start:.3f}s")
-                return ExecutorResult(start, time.time(), 'success', None, self.custom_vars, self.intermediate, self.context_params, result)
+                return ExecutorResult(self.exec_type, start, time.time(), 'success', None, self.custom_vars, self.intermediate, self.context_params, result)
             except Exception as e:
                 last_err = str(e)
                 logger.warning(f"执行器 {self.name} 第{attempt+1}次尝试失败: {last_err}")
@@ -102,4 +102,4 @@ class Executor:
                     await asyncio.sleep(self.retry_interval)
                     
         logger.error(f"执行器 {self.name} 所有重试均失败，最终错误: {last_err}")
-        return ExecutorResult(start, time.time(), 'failed', last_err, self.custom_vars, self.intermediate, self.context_params, None)
+        return ExecutorResult(self.exec_type, start, time.time(), 'failed', last_err, self.custom_vars, self.intermediate, self.context_params, None)

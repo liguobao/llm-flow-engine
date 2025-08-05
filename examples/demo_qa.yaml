@@ -22,6 +22,9 @@ executors:
       user_input: "${text_processing.output}"
       model: "gemma3:1b"
     depends_on: ["text_processing"]
+    timeout: 30
+    retry: 1
+    retry_interval: 2
 
   - name: model2_answer
     type: "task"
@@ -30,15 +33,9 @@ executors:
       user_input: "${text_processing.output}"
       model: "qwen2.5:0.5b"
     depends_on: ["text_processing"]
-
-  - name: model3_answer
-    type: "task"
-    func: llm_simple_call
-    custom_vars:
-      user_input: "${text_processing.output}"
-      model: "qwen2.5:0.5b"
-    depends_on: ["text_processing"]
-
+    timeout: 30
+    retry: 1
+    retry_interval: 2
 
 
   # 使用新的引用格式进行深度分析
@@ -46,18 +43,12 @@ executors:
     type: "task"
     func: llm_simple_call
     custom_vars:
-      user_input: "请对以下回答进行深度分析，提取关键信息和观点：${model1_answer.output} \n\n ${model2_answer.output} \n\n ${model3_answer.output} "
-      model: "gemma3:1b"
-    depends_on: ["model1_answer", "model2_answer", "model3_answer"]
-
-
-  - name: summary_step
-    type: "task"
-    func: llm_simple_call
-    custom_vars:
-      user_input: "请对以下深度分析进行总结：${deep_analysis.output}"
-      model: "deepseek-r1:7b"
-    depends_on: ["deep_analysis"]
+      user_input: "请简要分析以下两个回答的关键信息：\n1. ${model1_answer.output}\n\n2. ${model2_answer.output}"
+      model: "qwen2.5:0.5b"
+    depends_on: ["model1_answer", "model2_answer"]
+    timeout: 120
+    retry: 2
+    retry_interval: 3
 
 output:
   type: "end"
@@ -68,6 +59,5 @@ output:
     model_answers:
       gemma3_1b: "${model1_answer.output}"
       qwen2_5_0_5b: "${model2_answer.output}"
-      deepseek_r1_1_5b: "${model3_answer.output}"
     deep_analysis: "${deep_analysis.output}"
-    final_result: "${summary_step.output}"
+    summary: "基于 ${model1_answer.output} 和 ${model2_answer.output} 的分析结果：${deep_analysis.output}"
