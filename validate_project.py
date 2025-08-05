@@ -157,6 +157,18 @@ async def test_async_execution():
         print(f"❌ 异步执行测试失败: {e}")
         return False
 
+def test_async_wrapper():
+    """异步测试的包装函数"""
+    try:
+        # 在Windows上设置正确的事件循环策略
+        if sys.platform == 'win32':
+            asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+        
+        return asyncio.run(test_async_execution())
+    except Exception as e:
+        print(f"❌ 异步测试包装失败: {e}")
+        return False
+
 def test_project_structure():
     """验证项目结构"""
     print("\n🔍 验证项目结构...")
@@ -200,7 +212,7 @@ def main():
         ("WorkFlow类", test_workflow_class),
         ("内置函数", test_builtin_functions),
         ("DSL加载", test_dsl_loading),
-        ("异步执行", lambda: asyncio.run(test_async_execution())),
+        ("异步执行", test_async_wrapper),
     ]
     
     passed = 0
