@@ -11,7 +11,7 @@ from llm_flow_engine import execute_dsl, quick_llm_call, list_functions
 from llm_flow_engine import flow_engine
 
 # 方式3：导入具体组件
-from llm_flow_engine import Executor, WorkFlow, DAGWorkFlow
+from llm_flow_engine import Executor, WorkFlow
 
 async def package_usage_demo():
     """演示包的使用方式"""
