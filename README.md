@@ -44,11 +44,11 @@ brew install ollama  # macOS
 # 2. 启动Ollama服务
 ollama serve
 
-# 3. 下载推荐模型
-ollama pull gemma3:4b    # 主力模型
-ollama pull qwen2.5      # 中文优化
-ollama pull gemma2       # 轻量级
-ollama pull phi3         # 代码理解
+# 3. 本地推荐小模型
+ollama pull gemma3:1b
+ollama pull qwen2.5:0.5b
+ollama pull gemma3:4b
+ollama pull deepseek-r1:7b
 ```
 
 详细配置说明请参考 `ollama_config.md`

@@ -17,7 +17,10 @@ async def demo_basic_usage():
     
     # 1. 自定义模型配置
     logger.info("\n⚙️  1. 自定义模型配置")
-    
+    # ollama pull gemma3:1b
+    # ollama pull qwen2.5:0.5b
+    # ollama pull gemma3:4b
+    # ollama pull deepseek-r1:7b
     ollama_host = "http://192.168.50.57:11434"
     custom_models =await load_models_from_ollama(ollama_host)
     # 创建自定义配置提供者
@@ -31,9 +34,9 @@ async def demo_basic_usage():
     # 2. 从本地文件读取DSL并执行多模型问答汇总
     logger.info("\n🤖 2. 本地Ollama模型问答汇总演示")
     logger.info("问题: 什么是人工智能？")
-    logger.info("模型: gemma3:1b, qwen2.5:0.5b, deepseek-r1:1.5b")
-    logger.info("方案: 三个小模型分别回答，然后用gemma3:4b汇总分析")
-    
+    logger.info("模型: gemma3:1b, qwen2.5:0.5b, gemma3:4b")
+    logger.info("方案: 三个小模型分别回答，然后用deepseek-r1:7b汇总分析")
+
     try:
         # 读取本地DSL文件
         with open('./examples/demo_qa.yaml', 'r', encoding='utf-8') as f:
