@@ -285,31 +285,109 @@ output:
 
 ## 自定义配置
 
-### 1. 模型配置文件
+### 1. 模型配置方式
 
-创建 `models_config.json` 文件：
+LLM Flow Engine 支持两种模型添加方式：
 
-```json
-{
-  "gemma3:1b": {
-    "api_url": "http://localhost:11434/api/generate",
-    "api_key": "your_api_key_here"
-  },
-  "openai-gpt-4": {
-    "api_url": "https://api.openai.com/v1/chat/completions", 
-    "api_key": "sk-your-openai-key",
-    "model_name": "gpt-4"
-  },
-  "custom-model": {
-    "api_url": "https://your-custom-api.com/v1/generate",
-    "api_key": "your-custom-key",
-    "temperature": 0.7,
-    "max_tokens": 2048
-  }
-}
+#### 方式1：通过API主机自动发现模型（推荐）
+
+提供 `api_host` + `api_key` + `platform`，系统会自动通过 `/v1/models` 端点获取可用模型列表：
+
+```python
+from llm_flow_engine import ModelConfigProvider, FlowEngine
+
+# 异步方式（推荐）
+provider = await ModelConfigProvider.from_host_async(
+    api_host="http://localhost:11434",  # Ollama服务器
+    api_key="",  # Ollama通常不需要密钥
+    platform="ollama"
+)
+
+# 同步方式
+provider = ModelConfigProvider.from_host(
+    api_host="https://api.openai.com",
+    api_key="sk-your-openai-key",
+    platform="openai"
+)
+await provider.load_models_from_simple_config()
+
+# 创建引擎
+engine = FlowEngine(provider)
 ```
 
-### 2. 工作流执行器配置
+#### 方式2：手动添加单个模型配置
+
+逐个添加模型的详细配置信息：
+
+```python
+# 创建提供者
+provider = ModelConfigProvider()
+
+# 添加OpenAI模型
+provider.add_single_model(
+    model_name="gpt-4",
+    platform="openai",
+    api_url="https://api.openai.com/v1/chat/completions",
+    api_key="your-openai-key",
+    auth_header="Bearer",
+    message_format="openai",
+    max_tokens=4096,
+    supports=["temperature", "top_p", "frequency_penalty", "presence_penalty", "stop"]
+)
+
+# 添加DeepSeek模型
+provider.add_single_model(
+    model_name="deepseek-chat",
+    platform="openai_compatible",
+    api_url="https://api.deepseek.com/v1/chat/completions",
+    api_key="your-deepseek-key",
+    max_tokens=8192
+)
+
+# 添加本地自定义模型
+provider.add_single_model(
+    model_name="local-llm",
+    platform="custom",
+    api_url="http://192.168.1.100:8080/v1/chat/completions",
+    api_key="custom-token",
+    max_tokens=2048
+)
+
+engine = FlowEngine(provider)
+```
+
+### 2. 混合使用
+
+两种方式可以混合使用：
+
+```python
+# 1. 先通过API主机自动发现模型
+provider = await ModelConfigProvider.from_host_async(
+    api_host="http://localhost:11434",
+    platform="ollama"
+)
+
+# 2. 再手动添加其他自定义模型
+provider.add_single_model(
+    model_name="gpt-4",
+    platform="openai",
+    api_url="https://api.openai.com/v1/chat/completions",
+    api_key="your-key"
+)
+
+# 3. 创建FlowEngine使用
+engine = FlowEngine(provider)
+```
+
+### 3. 支持的平台类型
+
+- `ollama`: 本地Ollama服务
+- `openai`: OpenAI官方API
+- `openai_compatible`: OpenAI兼容的API服务
+- `anthropic`: Anthropic Claude API
+- `custom`: 自定义API服务
+
+### 4. 工作流执行器配置
 
 ```python
 from llm_flow_engine import ModelConfigProvider, FlowEngine
