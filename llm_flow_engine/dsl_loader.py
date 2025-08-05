@@ -15,23 +15,32 @@ from loguru import logger
 
 def load_workflow_from_dsl(dsl: Union[str, dict], func_map: Dict[str, Callable], dsl_type: str = 'yaml'):
     """
-    dsl: str或dict，定义工作流结构
-    func_map: 执行器名称->函数 的映射
-    dsl_type: 'yaml' 或 'json'
+    从DSL定义加载工作流
+    
+    Args:
+        dsl: str或dict，定义工作流结构
+        func_map: 执行器名称->函数 的映射
+        dsl_type: 'yaml' 或 'json'
 
     DSL 格式:
-    metadata:
-        version: str   # DSL版本号
-        description: str   # 工作流描述
-    input:
-        type: "start"  # 起始节点类型
-        name: str      # 输入节点名称
-        data: dict     # 输入数据
-    executors: []      # 执行器列表
-    output:
-        type: "end"    # 终止节点类型
-        name: str      # 输出节点名称
-        data: dict     # 输出数据映射
+        metadata:
+            version: str   # DSL版本号
+            description: str   # 工作流描述
+        input:
+            type: "start"  # 起始节点类型
+            name: str      # 输入节点名称
+            data: dict     # 输入数据
+        executors: []      # 执行器列表，每个执行器包含:
+            - name: str    # 执行器名称
+              type: str    # 执行器类型
+              func: str    # 函数名称
+              depends_on: []  # 依赖的执行器列表
+              custom_vars: {}  # 自定义变量
+              # ... 其他配置
+        output:
+            type: "end"    # 终止节点类型
+            name: str      # 输出节点名称
+            data: dict     # 输出数据映射
     """
     if isinstance(dsl, str):
         if dsl_type == 'yaml':
@@ -52,9 +61,9 @@ def load_workflow_from_dsl(dsl: Union[str, dict], func_map: Dict[str, Callable],
     logger.debug(f"工作流版本: {version}, 描述: {description}")
 
     # 处理输入节点 - 创建一个可以在运行时更新的工作流上下文
-    workflow_input = dsl_obj.get('input', dsl_obj.get('inputs', {}))
+    workflow_input = dsl_obj.get('input', {})
     if workflow_input:
-        input_data = workflow_input.get('data', workflow_input)  # 兼容新格式直接定义数据
+        input_data = workflow_input.get('data', workflow_input)  # 兼容直接定义数据的格式
         # 创建一个占位符上下文，运行时会被覆盖
         workflow_context = {'workflow_input': input_data}
         logger.debug(f"工作流输入数据: {input_data}")
@@ -66,79 +75,45 @@ def load_workflow_from_dsl(dsl: Union[str, dict], func_map: Dict[str, Callable],
     executors = []
     dep_map = {}
     
-    # 支持新的nodes格式和旧的executors格式
-    nodes_config = dsl_obj.get('nodes', dsl_obj.get('executors', []))
+    # 使用executors格式
+    executors_config = dsl_obj.get('executors', [])
     
-    if isinstance(nodes_config, dict):
-        # 新格式：nodes是字典
-        for name, node_config in nodes_config.items():
-            exec_type = node_config.get('type', '')
-            func_name = node_config['function']
-            func = func_map[func_name]
-            timeout = node_config.get('timeout', 60)
-            retry = node_config.get('retry', 0)
-            retry_interval = node_config.get('retry_interval', 1)
-            context = node_config.get('context', {})
-            model = node_config.get('model')
-            kb = node_config.get('kb')
-            ext_dep = node_config.get('ext_dep')
-            custom_vars = node_config.get('custom_vars', {})
-            intermediate = node_config.get('intermediate', {})
-            context_params = node_config.get('context_params', {})
-            logger.debug(f"解析占位符前的custom_vars: {node_config.get('custom_vars', {})}")
-            context.update(workflow_context)  # 合并工作流全局上下文
-            custom_vars = {key: resolve_placeholders(val, context) for key, val in node_config.get('custom_vars', {}).items()}
-            logger.debug(f"解析占位符后的custom_vars: {custom_vars}")
-            exe = Executor(
-                name, exec_type, func,
-                timeout=timeout, retry=retry, retry_interval=retry_interval,
-                context=context, model=model, kb=kb, ext_dep=ext_dep,
-                custom_vars=custom_vars, intermediate=intermediate, context_params=context_params
-            )
-            executors.append(exe)
-            # 支持dependencies
-            depends_on = node_config.get('dependencies', node_config.get('depends_on', []))
-            if isinstance(depends_on, str):
-                depends_on = [depends_on]
-            dep_map[name] = depends_on
-    else:
-        # 旧格式：executors是列表
-        for exe_conf in nodes_config:
-            name = exe_conf['name']
-            exec_type = exe_conf.get('type', '')
-            func_name = exe_conf['func']
-            func = func_map[func_name]
-            timeout = exe_conf.get('timeout', 60)
-            retry = exe_conf.get('retry', 0)
-            retry_interval = exe_conf.get('retry_interval', 1)
-            context = exe_conf.get('context', {})
-            model = exe_conf.get('model')
-            kb = exe_conf.get('kb')
-            ext_dep = exe_conf.get('ext_dep')
-            custom_vars = exe_conf.get('custom_vars', {})
-            intermediate = exe_conf.get('intermediate', {})
-            context_params = exe_conf.get('context_params', {})
-            logger.debug(f"解析占位符前的custom_vars: {exe_conf.get('custom_vars', {})}")
-            context.update(workflow_context)  # 合并工作流全局上下文
-            custom_vars = {key: resolve_placeholders(val, context) for key, val in exe_conf.get('custom_vars', {}).items()}
-            logger.debug(f"解析占位符后的custom_vars: {custom_vars}")
-            exe = Executor(
-                name, exec_type, func,
-                timeout=timeout, retry=retry, retry_interval=retry_interval,
-                context=context, model=model, kb=kb, ext_dep=ext_dep,
-                custom_vars=custom_vars, intermediate=intermediate, context_params=context_params
-            )
-            executors.append(exe)
-            # 支持depends_on
-            depends_on = exe_conf.get('depends_on', [])
-            if isinstance(depends_on, str):
-                depends_on = [depends_on]
-            dep_map[name] = depends_on
+    for exe_conf in executors_config:
+        name = exe_conf['name']
+        exec_type = exe_conf.get('type', '')
+        func_name = exe_conf['func']
+        func = func_map[func_name]
+        timeout = exe_conf.get('timeout', 60)
+        retry = exe_conf.get('retry', 0)
+        retry_interval = exe_conf.get('retry_interval', 1)
+        context = exe_conf.get('context', {})
+        model = exe_conf.get('model')
+        kb = exe_conf.get('kb')
+        ext_dep = exe_conf.get('ext_dep')
+        custom_vars = exe_conf.get('custom_vars', {})
+        intermediate = exe_conf.get('intermediate', {})
+        context_params = exe_conf.get('context_params', {})
+        logger.debug(f"解析占位符前的custom_vars: {exe_conf.get('custom_vars', {})}")
+        context.update(workflow_context)  # 合并工作流全局上下文
+        custom_vars = {key: resolve_placeholders(val, context) for key, val in exe_conf.get('custom_vars', {}).items()}
+        logger.debug(f"解析占位符后的custom_vars: {custom_vars}")
+        exe = Executor(
+            name, exec_type, func,
+            timeout=timeout, retry=retry, retry_interval=retry_interval,
+            context=context, model=model, kb=kb, ext_dep=ext_dep,
+            custom_vars=custom_vars, intermediate=intermediate, context_params=context_params
+        )
+        executors.append(exe)
+        # 使用depends_on依赖声明
+        depends_on = exe_conf.get('depends_on', [])
+        if isinstance(depends_on, str):
+            depends_on = [depends_on]
+        dep_map[name] = depends_on
 
     # 处理输出节点
-    workflow_output = dsl_obj.get('output', dsl_obj.get('outputs', {}))
+    workflow_output = dsl_obj.get('output', {})
     if workflow_output:
-        # 兼容新格式（直接定义输出映射）和旧格式（在data字段下）
+        # 兼容直接定义输出映射和在data字段下定义的格式
         output_data = workflow_output.get('data', workflow_output) if 'data' in workflow_output else workflow_output
         logger.debug(f"工作流输出映射: {output_data}")
         
