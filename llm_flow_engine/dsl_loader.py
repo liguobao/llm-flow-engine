@@ -6,9 +6,6 @@ except ImportError:
 from .executor import Executor
 from .workflow import WorkFlow
 from typing import Union, Callable, Dict
-
-
-from .dag_workflow import DAGWorkFlow
 import re
 from .utils import resolve_placeholders
 from loguru import logger
@@ -82,6 +79,10 @@ def load_workflow_from_dsl(dsl: Union[str, dict], func_map: Dict[str, Callable],
         name = exe_conf['name']
         exec_type = exe_conf.get('type', '')
         func_name = exe_conf['func']
+        # 核心算子或者自定义函数
+        if func_name not in func_map:
+            raise ValueError(f"未找到函数: {func_name}，请检查DSL定义和函数映射")
+        # 获取函数具体实现
         func = func_map[func_name]
         timeout = exe_conf.get('timeout', 60)
         retry = exe_conf.get('retry', 0)
@@ -160,15 +161,15 @@ def load_workflow_from_dsl(dsl: Union[str, dict], func_map: Dict[str, Callable],
         if output_deps:
             dep_map[output_executor.name] = output_deps
 
-    # 判断是否为DAG
+    # 判断是否为DAG - 统一使用WorkFlow类处理
     is_dag = any(dep_map[name] for name in dep_map)
     if is_dag:
-        workflow = DAGWorkFlow(executors, dep_map)
+        workflow = WorkFlow(executors, force_sequential=False, dep_map=dep_map)
     else:
         force_sequential = dsl_obj.get('force_sequential', True)
         workflow = WorkFlow(executors, force_sequential=force_sequential)
 
-    # 保存工作流配置
+    # 设置工作流属性
     workflow.metadata = metadata
     workflow.input = workflow_input
     workflow.output = workflow_output

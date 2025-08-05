@@ -6,7 +6,6 @@ from .builtin_functions import BUILTIN_FUNCTIONS
 from .executor import Executor
 from .executor_result import ExecutorResult
 from .workflow import WorkFlow
-from .dag_workflow import DAGWorkFlow
 from .dsl_loader import load_workflow_from_dsl
 from .model_config import ModelConfigProvider, default_model_provider, get_model_config, list_supported_models
 
@@ -23,7 +22,6 @@ __all__ = [
     'Executor', 
     'ExecutorResult',
     'WorkFlow',
-    'DAGWorkFlow',
     'load_workflow_from_dsl',
     'ModelConfigProvider',
     'default_model_provider',
