@@ -1,219 +1,185 @@
 # LLM Flow Engine
 
-一个基于 DSL（领域特定语言）的 LLM 工作流引擎，支持多模型协作、依赖管理和结果汇总。通过 YAML 配置文件定义复杂的 AI 工作流，实现多个 LLM 模型的协同工作。
+[🇨🇳 中文版本](https://github.com/liguobao/llm-flow-engine/blob/main/docs/README_zh.md) | 🇺🇸 English
 
-## 核心特性
+A DSL-based LLM workflow engine that supports multi-model collaboration, dependency management, and result aggregation. Define complex AI workflows through YAML configuration files and enable collaborative work between multiple LLM models.
 
-- **DSL 工作流定义** - 使用 YAML 格式定义复杂的 LLM 工作流
-- **DAG 依赖管理** - 支持有向无环图的节点依赖关系和并行执行
-- **占位符解析** - 使用 `${node.output}` 语法实现节点间数据传递  
-- **多模型支持** - 支持不同 LLM 模型的调用和结果汇总
-- **灵活配置** - 自定义模型配置和参数管理
-- **异步执行** - 高效的异步任务处理和错误重试
-- **结果汇总** - 内置多种结果合并和分析函数
-- **可扩展架构** - 支持自定义函数和模型适配器
+## ✨ Key Features
 
-## 项目结构
+- **🔧 DSL Workflow Definition** - Define complex LLM workflows using YAML format
+- **📊 DAG Dependency Management** - Support directed acyclic graph node dependencies and parallel execution
+- **🔗 Placeholder Resolution** - Use `${node.output}` syntax for inter-node data passing
+- **🤖 Multi-Model Support** - Support calling different LLM models and result aggregation
+- **⚙️ Flexible Configuration** - Custom model configuration and parameter management
+- **⚡ Async Execution** - Efficient asynchronous task processing and error retry
+- **📈 Result Aggregation** - Built-in various result merging and analysis functions
+- **🔧 Extensible Architecture** - Support custom functions and model adapters
 
-```text
-llm_flow_engine/
-├── __init__.py           # 主包初始化和便捷接口
-├── flow_engine.py        # 主引擎入口
-├── dsl_loader.py         # DSL 解析器
-├── workflow.py           # 统一工作流管理(支持DAG和简单模式)
-├── executor.py           # 任务执行器
-├── executor_result.py    # 执行结果封装
-├── builtin_functions.py  # 内置函数库
-├── model_config.py       # 模型配置管理
-└── utils.py             # 工具函数
+## 🚀 Quick Start
 
-examples/
-├── demo_example.py       # 完整示例演示
-├── demo_qa.yaml          # 工作流DSL示例
-└── package_demo.py       # 包使用方式演示
-```
-
-## 快速开始
-
-### 环境要求
+### Prerequisites
 
 - Python 3.8+
 - aiohttp >= 3.8.0
 - pyyaml >= 6.0
 - loguru >= 0.7.0
 
-### 安装依赖
+### Installation
 
 ```bash
-# 克隆项目
-git clone https://github.com/your-org/llm-flow-engine.git
-cd llm-flow-engine
-
-# 安装依赖
-pip install -r requirements.txt
-
-# 开发模式安装
-pip install -e .
+pip install llm-flow-engine
 ```
 
-### 配置Ollama（推荐）
-
-本项目默认使用本地Ollama模型，请先安装和配置：
-
-```bash
-# 1. 安装Ollama
-brew install ollama  # macOS
-# 或访问 https://ollama.ai 下载
-
-# 2. 启动Ollama服务
-ollama serve
-
-# 3. 下载推荐的小模型
-ollama pull gemma3:1b       # 1B参数，轻量级
-ollama pull qwen2.5:0.5b    # 0.5B参数，快速响应
-ollama pull gemma3:4b       # 4B参数，性能均衡
-ollama pull deepseek-r1:7b  # 7B参数，深度分析
-```
-
-### 运行演示
-
-```bash
-# 运行完整示例（需要Ollama服务）
-python examples/demo_example.py
-
-# 运行包使用演示
-python examples/package_demo.py
-```
-
-演示将展示：
-
-- 多模型协同问答
-- 结果汇总分析  
-- DAG依赖执行
-- 占位符数据传递
-
-## API 使用
-
-### 基础用法
+### Basic Usage
 
 ```python
 import asyncio
 from llm_flow_engine import FlowEngine, ModelConfigProvider
 
 async def main():
-    # 使用默认配置
-    engine = FlowEngine()
-    
-    # 执行简单DSL
-    result = await engine.execute_simple_flow("什么是人工智能？")
-    print(result)
-
-# 运行
-asyncio.run(main())
-```
-
-### 高级用法
-
-```python
-import asyncio
-from llm_flow_engine import FlowEngine, ModelConfigProvider
-
-async def advanced_example():
-    # 创建自定义模型配置
-    custom_models = {
-        "my_model": {
-            "api_url": "http://localhost:11434/api/generate",
-            "api_key": "",
-            "temperature": 0.7
-        }
-    }
-    
-    # 创建配置提供者
-    provider = ModelConfigProvider(custom_models)
-    
-    # 使用自定义配置创建引擎
-    engine = FlowEngine(model_provider=provider)
-    
-    # 执行DSL文件
-    result = await engine.execute_dsl_file(
-        "examples/demo_qa.yaml", 
-        {"question": "解释量子计算"}
+    # 1. Configure models (auto-discovery)
+    provider = await ModelConfigProvider.from_host_async(
+        api_host="http://127.0.0.1:11434", 
+        platform="ollama"
     )
     
-    print("工作流结果:", result)
+    # 2. Create engine
+    engine = FlowEngine(provider)
+    
+    # 3. Execute workflow
+    dsl_content = """
+    metadata:
+      version: "1.0"
+      description: "Simple Q&A workflow"
+    
+    input:
+      type: "start"
+      name: "workflow_input"
+      data:
+        question: ""
+    
+    executors:
+      - name: answer_step
+        type: task
+        func: llm_simple_call
+        custom_vars:
+          user_input: "${workflow_input.question}"
+          model: "llama2"
+    
+    output:
+      type: "end"
+      name: "workflow_output"
+      data:
+        answer: "${answer_step.output}"
+    """
+    
+    result = await engine.execute_dsl(
+        dsl_content, 
+        inputs={"workflow_input": {"question": "What is AI?"}}
+    )
+    
+    print(f"Result: {result}")
 
-asyncio.run(advanced_example())
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
-### 自定义模型配置
+## 📋 Project Structure
+
+```text
+llm_flow_engine/
+├── __init__.py           # Main package initialization
+├── flow_engine.py        # Main engine entry point
+├── dsl_loader.py         # DSL parser
+├── workflow.py           # Unified workflow management
+├── executor.py           # Task executor
+├── executor_result.py    # Execution result wrapper
+├── builtin_functions.py  # Built-in function library
+├── model_config.py       # Model configuration management
+└── utils.py             # Utility functions
+
+examples/
+├── demo_example.py       # Complete example demo
+├── demo_qa.yaml          # Workflow DSL example
+└── model_config_demo.py  # Model configuration demo
+```
+
+## 🔧 Model Configuration
+
+### Method 1: Auto-Discovery (Recommended)
 
 ```python
-from llm_flow_engine import ModelConfigProvider
-
-# 方法1：直接创建配置
-custom_models = {
-    "gpt-4": {
-        "api_url": "https://api.openai.com/v1/chat/completions",
-        "api_key": "your-api-key",
-        "model_name": "gpt-4"
-    },
-    "local_model": {
-        "api_url": "http://localhost:11434/api/generate", 
-        "api_key": ""
-    }
-}
-
-# 方法2：从JSON文件加载
-config = ModelConfigProvider.from_file("models_config.json")
-
-# 创建配置提供者
-provider = ModelConfigProvider(custom_models)
-
-# 使用自定义配置创建引擎
-engine = FlowEngine(model_provider=provider)
+# Auto-discover Ollama models
+provider = await ModelConfigProvider.from_host_async(
+    api_host="http://127.0.0.1:11434",
+    platform="ollama"
+)
 ```
 
-## 工作流DSL详解
+### Method 2: Manual Configuration
 
-### 基本结构
+```python
+# Create provider and add models manually
+provider = ModelConfigProvider()
+
+# Add OpenAI model
+provider.add_single_model(
+    model_name="gpt-4",
+    platform="openai",
+    api_url="https://api.openai.com/v1/chat/completions",
+    api_key="your-api-key",
+    max_tokens=4096
+)
+
+# Add custom model
+provider.add_single_model(
+    model_name="custom-llm",
+    platform="openai_compatible",
+    api_url="https://your-api.com/v1/chat/completions",
+    api_key="your-api-key",
+    max_tokens=2048
+)
+```
+
+## 📝 DSL Workflow Format
+
+### Basic Structure
 
 ```yaml
 metadata:
-  version: "1.1"
-  description: "工作流描述"
+  version: "1.0"
+  description: "Workflow description"
 
 input:
   type: "start"
   name: "workflow_input"
   data:
-    question: "输入问题"
+    key: "value"
 
 executors:
-  - name: "step1"
-    type: "task"
-    func: "llm_simple_call"
+  - name: task1
+    type: task
+    func: function_name
     custom_vars:
-      user_input: "${workflow_input.question}"
-      model: "gemma3:1b"
-    depends_on: []
-
-  - name: "step2"
-    type: "task"
-    func: "combine_outputs"
-    custom_vars:
-      inputs: ["${step1.output}"]
-    depends_on: ["step1"]
+      param1: "${input.key}"
+      param2: "static_value"
+    depends_on: []  # Dependencies
+    timeout: 30     # Timeout in seconds
+    retry: 2        # Retry count
 
 output:
-  result: "${step2.output}"
+  type: "end"
+  name: "workflow_output"
+  data:
+    result: "${task1.output}"
 ```
 
-### 复杂示例：多模型协作
+### Multi-Model Workflow Example
 
 ```yaml
 metadata:
-  version: "1.1"
-  description: "多模型问答汇总工作流"
+  version: "1.0"
+  description: "Multi-model Q&A with analysis"
 
 input:
   type: "start"
@@ -222,295 +188,112 @@ input:
     question: ""
 
 executors:
-  # 文本预处理
-  - name: "text_processing"
-    type: "task"
-    func: "text_process"
+  # Parallel model calls
+  - name: model1_answer
+    type: task
+    func: llm_simple_call
     custom_vars:
-      text: "${workflow_input.question}"
+      user_input: "${workflow_input.question}"
+      model: "llama2"
+    timeout: 30
 
-  # 三个模型并行回答
-  - name: "model1_answer"
-    type: "task"
-    func: "llm_simple_call"
+  - name: model2_answer
+    type: task
+    func: llm_simple_call
     custom_vars:
-      user_input: "${text_processing.output}"
-      model: "gemma3:1b"
-    depends_on: ["text_processing"]
+      user_input: "${workflow_input.question}"
+      model: "mistral"
+    timeout: 30
 
-  - name: "model2_answer"
-    type: "task"
-    func: "llm_simple_call"
+  # Analysis step (depends on both models)
+  - name: analysis
+    type: task
+    func: llm_simple_call
     custom_vars:
-      user_input: "${text_processing.output}"
-      model: "qwen2.5:0.5b"
-    depends_on: ["text_processing"]
-
-  - name: "model3_answer"
-    type: "task"
-    func: "llm_simple_call"
-    custom_vars:
-      user_input: "${text_processing.output}"
-      model: "gemma3:4b"
-    depends_on: ["text_processing"]
-
-  # 深度分析
-  - name: "deep_analysis"
-    type: "task"
-    func: "llm_simple_call"
-    custom_vars:
-      user_input: "分析以下回答: ${model1_answer.output}, ${model2_answer.output}, ${model3_answer.output}"
-      model: "gemma3:4b"
-    depends_on: ["model1_answer", "model2_answer", "model3_answer"]
-
-  # 最终汇总
-  - name: "summary_step"
-    type: "task"
-    func: "llm_simple_call"
-    custom_vars:
-      user_input: "总结分析: ${deep_analysis.output}"
-      model: "deepseek-r1:7b"
-    depends_on: ["deep_analysis"]
+      user_input: "Compare these answers: 1) ${model1_answer.output} 2) ${model2_answer.output}"
+      model: "llama2"
+    depends_on: ["model1_answer", "model2_answer"]
 
 output:
-  original_question: "${workflow_input.question}"
-  processed_question: "${text_processing.output}"
-  model_answers:
-    gemma3_1b: "${model1_answer.output}"
-    qwen2_5_0_5b: "${model2_answer.output}"
-    gemma3_4b: "${model3_answer.output}"
-  deep_analysis: "${deep_analysis.output}"
-  final_result: "${summary_step.output}"
+  type: "end"
+  name: "workflow_output"
+  data:
+    original_question: "${workflow_input.question}"
+    model1_response: "${model1_answer.output}"
+    model2_response: "${model2_answer.output}"
+    analysis: "${analysis.output}"
 ```
 
-## 自定义配置
+## 🔌 Built-in Functions
 
-### 1. 模型配置方式
+- **`llm_simple_call`** - Basic LLM model call
+- **`text_process`** - Text preprocessing and formatting
+- **`result_summary`** - Multi-result summarization
+- **`data_transform`** - Data format transformation
 
-LLM Flow Engine 支持两种模型添加方式：
+## 🧪 Running Examples
 
-#### 方式1：通过API主机自动发现模型（推荐）
+```bash
+# Basic usage demo
+python examples/demo_example.py
 
-提供 `api_host` + `api_key` + `platform`，系统会自动通过 `/v1/models` 端点获取可用模型列表：
+# Model configuration demo  
+python examples/model_config_demo.py
 
-```python
-from llm_flow_engine import ModelConfigProvider, FlowEngine
-
-# 异步方式（推荐）
-provider = await ModelConfigProvider.from_host_async(
-    api_host="http://localhost:11434",  # Ollama服务器
-    api_key="",  # Ollama通常不需要密钥
-    platform="ollama"
-)
-
-# 同步方式
-provider = ModelConfigProvider.from_host(
-    api_host="https://api.openai.com",
-    api_key="sk-your-openai-key",
-    platform="openai"
-)
-await provider.load_models_from_simple_config()
-
-# 创建引擎
-engine = FlowEngine(provider)
+# Package usage demo
+python examples/package_demo.py
 ```
 
-#### 方式2：手动添加单个模型配置
+## 📊 Supported Platforms
 
-逐个添加模型的详细配置信息：
+- **Ollama** - Local LLM models
+- **OpenAI** - GPT series models
+- **OpenAI Compatible** - Any OpenAI-compatible API
+- **Anthropic** - Claude series models
+- **Custom** - Custom API endpoints
 
-```python
-# 创建提供者
-provider = ModelConfigProvider()
+## 🛠️ Development
 
-# 添加OpenAI模型
-provider.add_single_model(
-    model_name="gpt-4",
-    platform="openai",
-    api_url="https://api.openai.com/v1/chat/completions",
-    api_key="your-openai-key",
-    auth_header="Bearer",
-    message_format="openai",
-    max_tokens=4096,
-    supports=["temperature", "top_p", "frequency_penalty", "presence_penalty", "stop"]
-)
+### Setup Development Environment
 
-# 添加DeepSeek模型
-provider.add_single_model(
-    model_name="deepseek-chat",
-    platform="openai_compatible",
-    api_url="https://api.deepseek.com/v1/chat/completions",
-    api_key="your-deepseek-key",
-    max_tokens=8192
-)
+```bash
+git clone https://github.com/liguobao/llm-flow-engine.git
+cd llm-flow-engine
 
-# 添加本地自定义模型
-provider.add_single_model(
-    model_name="local-llm",
-    platform="custom",
-    api_url="http://192.168.1.100:8080/v1/chat/completions",
-    api_key="custom-token",
-    max_tokens=2048
-)
+# Install development dependencies
+pip install -e ".[dev]"
 
-engine = FlowEngine(provider)
+# Run tests
+pytest
+
+# Format code
+black .
 ```
 
-### 2. 混合使用
+### Project Validation
 
-两种方式可以混合使用：
-
-```python
-# 1. 先通过API主机自动发现模型
-provider = await ModelConfigProvider.from_host_async(
-    api_host="http://localhost:11434",
-    platform="ollama"
-)
-
-# 2. 再手动添加其他自定义模型
-provider.add_single_model(
-    model_name="gpt-4",
-    platform="openai",
-    api_url="https://api.openai.com/v1/chat/completions",
-    api_key="your-key"
-)
-
-# 3. 创建FlowEngine使用
-engine = FlowEngine(provider)
+```bash
+# Validate project structure and configuration
+python validate_project.py
 ```
 
-### 3. 支持的平台类型
+## 📄 License
 
-- `ollama`: 本地Ollama服务
-- `openai`: OpenAI官方API
-- `openai_compatible`: OpenAI兼容的API服务
-- `anthropic`: Anthropic Claude API
-- `custom`: 自定义API服务
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-### 4. 工作流执行器配置
+## 🤝 Contributing
 
-```python
-from llm_flow_engine import ModelConfigProvider, FlowEngine
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-# 使用配置文件
-config = ModelConfigProvider.from_file("models_config.json")
+## 📞 Support
 
-# 或者直接在代码中配置
-config = ModelConfigProvider({
-    "gemma3:1b": {
-        "api_url": "http://localhost:11434/api/generate",
-        "api_key": "",
-        "temperature": 0.8,
-        "max_tokens": 1024,
-        "stream": False
-    }
-})
+- 🐛 Issues: [GitHub Issues](https://github.com/liguobao/llm-flow-engine/issues)
+- 📖 Documentation: [GitHub Wiki](https://github.com/liguobao/llm-flow-engine/wiki)
 
-# 创建工作流引擎
-engine = FlowEngine(config)
-result = await engine.execute_dsl_file("workflow.yaml", {"question": "用户问题"})
-```
+## 🌟 Star History
 
-### 3. 内置函数参数说明
+If you find this project helpful, please consider giving it a star! ⭐
 
-#### `llm_simple_call` 参数
+---
 
-- **必需参数**：
-  - `user_input`: 用户输入文本
-  - `model`: 模型标识符（需在config中配置）
-
-- **可选参数**：
-  - `prompt`: 系统提示词（默认：空）
-  - `temperature`: 温度参数（默认：从config获取）
-  - `max_tokens`: 最大token数（默认：从config获取）
-  - `stream`: 是否流式输出（默认：false）
-
-#### `llm_api_call` 参数
-
-- **必需参数**：
-  - `user_input`: 用户输入
-  - `model`: 模型配置键
-
-- **可选参数**：
-  - `prompt`: 系统提示（可选）
-  - 其他参数从模型配置中自动提取
-
-### 4. 错误处理配置
-
-```python
-from llm_flow_engine import FlowEngine
-import logging
-
-# 启用详细日志
-logging.basicConfig(level=logging.DEBUG)
-
-# 创建引擎并处理异常
-try:
-    engine = FlowEngine(config)
-    result = await engine.execute_dsl_file("workflow.yaml", input_data)
-    print(f"执行成功: {result}")
-except Exception as e:
-    print(f"执行失败: {e}")
-```
-
-## 内置模型配置详情
-
-### 默认支持的模型
-
-```python
-# model_config.py 内置配置
-{
-    'gemma3:1b': {
-        'platform': 'ollama', 
-        'api_url': 'http://localhost:11434/api/chat',
-        'auth_header': None,
-        'message_format': 'ollama',
-        'max_tokens': 2048,  # 适合1B模型的token限制
-        'supports': ['temperature', 'top_k', 'top_p']
-    },
-    'qwen2.5:0.5b': {
-        'platform': 'ollama', 
-        'api_url': 'http://localhost:11434/api/chat',
-        'auth_header': None,
-        'message_format': 'ollama',
-        'max_tokens': 4096,  # 更大模型的token限制
-        'supports': ['temperature', 'top_k', 'top_p']
-    },
-    'deepseek-r1:7b': {
-        'platform': 'ollama',
-        'api_url': 'http://localhost:11434/api/chat',
-        'auth_header': None,
-        'message_format': 'ollama',
-        'max_tokens': 8192,  # 大模型支持更多token
-        'supports': ['temperature', 'top_k', 'top_p', 'repetition_penalty']
-    }
-}
-```
-
-### 占位符语法
-
-- `${workflow_input.key}` - 引用工作流输入数据
-- `${node_name.output}` - 引用前置节点的输出结果
-- `${node_name.property}` - 引用节点的特定属性
-- 支持嵌套引用和复杂表达式
-
-### DSL语法规则
-
-1. **metadata**: 工作流元数据（版本、描述等）
-2. **input**: 定义输入数据结构和初始值
-3. **executors**: 执行器列表，按依赖关系执行
-4. **output**: 定义最终输出格式
-
-## 贡献指南
-
-欢迎提交PR和Issues！请遵循以下步骤：
-
-1. Fork 本仓库
-2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 创建 Pull Request
-
-## 许可证
-
-本项目基于 MIT 许可证开源 - 查看 [LICENSE](LICENSE) 文件了解详情
+Made with ❤️ by the LLM Flow Engine Team

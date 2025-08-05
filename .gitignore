@@ -25,3 +25,5 @@
 *.orig
 *.tmp
 *.pid
+dist/
+build/
