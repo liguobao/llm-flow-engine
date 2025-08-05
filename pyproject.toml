@@ -4,22 +4,44 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "llm-flow-engine"
-version = "1.0.0"
-description = "基于asyncio的LLM工作流DSL执行引擎"
+version = "0.7.1"
+description = "A DSL-based LLM workflow engine that supports multi-model collaboration, dependency management, and result aggregation"
 readme = "README.md"
-authors = [{name = "LLM Flow Team"}]
+authors = [
+    {name = "liguobao", email = "codelover@qq.com"}
+]
+maintainers = [
+    {name = "liguobao", email = "codelover@qq.com"}
+]
 license = {text = "MIT"}
+keywords = [
+    "llm", 
+    "workflow", 
+    "dsl", 
+    "ai", 
+    "automation", 
+    "multi-model", 
+    "async", 
+    "dag",
+    "chatgpt",
+    "ollama"
+]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: System :: Distributed Computing",
+    "Topic :: Text Processing :: Linguistic",
 ]
 requires-python = ">=3.8"
 dependencies = [
@@ -32,13 +54,29 @@ dependencies = [
 dev = [
     "pytest>=7.0",
     "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.0",
     "black>=22.0",
     "flake8>=4.0",
+    "mypy>=1.0",
+    "build>=0.10.0",
+    "twine>=4.0.0",
+]
+test = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.0",
+]
+docs = [
+    "mkdocs>=1.4.0",
+    "mkdocs-material>=8.0.0",
 ]
 
 [project.urls]
-Homepage = "https://github.com/your-org/llm-flow-engine"
-Repository = "https://github.com/your-org/llm-flow-engine.git"
+Homepage = "https://github.com/liguobao/llm-flow-engine"
+Repository = "https://github.com/liguobao/llm-flow-engine.git"
+Issues = "https://github.com/liguobao/llm-flow-engine/issues"
+Documentation = "https://github.com/liguobao/llm-flow-engine/wiki"
+Changelog = "https://github.com/liguobao/llm-flow-engine/releases"
 
 [tool.setuptools.packages.find]
 include = ["llm_flow_engine*"]
