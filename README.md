@@ -56,14 +56,12 @@ ollama pull phi3         # 代码理解
 ### 运行演示
 
 ```bash
-# 验证模型配置
-python test_config.py
 
-# 运行完整演示
-python demo_example.py
+# 安装
+pip install -e .
 
-# 运行基础演示
-python demo.py
+# 运行演示脚本
+python examples/demo_example.py
 ```
 
 ## API 使用
@@ -78,7 +76,7 @@ result = await engine.run_workflow_from_dsl(
 )
 ```
 
-## DSL 工作流示例
+## 工作流DSL示例
 
 ```yaml
 metadata:
@@ -111,33 +109,38 @@ output:
   result: "${summary_step.output}"
 ```
 
-## 配置说明
+## 模型配置说明
 
-### 模型配置文件
+```python
+# model_config.py
+{
+        'gemma3:1b': {
+            'platform': 'ollama', 
+            'api_url': 'http://localhost:11434/api/chat',
+            'auth_header': None,
+            'message_format': 'ollama',
+            'max_tokens': 2048,  # 适合1B模型的token限制
+            'supports': ['temperature', 'top_k', 'top_p']
+        },
+        'qwen2.5:0.5b': {
+            'platform': 'ollama', 
+            'api_url': 'http://localhost:11434/api/chat',
+            'auth_header': None,
+            'message_format': 'ollama',
+            'max_tokens': 4096,  # 1.5B模型可以处理更多token
+            'supports': ['temperature', 'top_k', 'top_p']
+        },
+        'gemma3:4b': {
+            'platform': 'ollama', 
+            'api_url': 'http://localhost:11434/api/chat',
+            'auth_header': None,
+            'message_format': 'ollama',
+            'max_tokens': 4096,  # 4B模型性能更好
+            'supports': ['temperature', 'top_k', 'top_p']
+        }
+    }
 
-本项目提供完整的模型配置系统：
-
-- **`models_config.json`** - 完整的模型配置文件（24个模型）
-- **`json_config_manager.py`** - JSON配置管理器
-- **`integrated_config.py`** - 集成配置提供者
-
-```bash
-# 查看配置演示
-python json_config_manager.py
-
-# 测试集成配置
-python integrated_config.py
 ```
-
-### 支持的模型
-
-- **Ollama 本地模型**: gemma3:4b, qwen2.5, gemma2, phi3 等 11个模型
-- **OpenAI 模型**: gpt-3.5-turbo, gpt-4, gpt-4o 等
-- **Anthropic 模型**: claude-3-haiku, claude-3-sonnet, claude-3-opus
-- **Google 模型**: gemini-pro, gemini-1.5-pro
-- **其他平台**: Azure OpenAI, Hugging Face
-
-详细配置说明请参考 `models_config_guide.md`
 
 ### 占位符语法
 

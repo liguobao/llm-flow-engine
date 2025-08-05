@@ -9,6 +9,7 @@ DEFAULT_MODEL_PROVIDERS = {
     "gemma3:4b": {
         "platform": "ollama",
         "api_url": "http://localhost:11434/api/chat",
+        "api_key": None,  # Ollama本地模型不需要API key
         "auth_header": None,
         "message_format": "ollama",
         "max_tokens": 8192,
@@ -17,6 +18,7 @@ DEFAULT_MODEL_PROVIDERS = {
     "qwen2.5": {
         "platform": "ollama",
         "api_url": "http://localhost:11434/api/chat",
+        "api_key": None,  # Ollama本地模型不需要API key
         "auth_header": None,
         "message_format": "ollama",
         "max_tokens": 8192,
@@ -25,6 +27,7 @@ DEFAULT_MODEL_PROVIDERS = {
     "gemma2": {
         "platform": "ollama",
         "api_url": "http://localhost:11434/api/chat",
+        "api_key": None,  # Ollama本地模型不需要API key
         "auth_header": None,
         "message_format": "ollama",
         "max_tokens": 8192,
@@ -34,6 +37,7 @@ DEFAULT_MODEL_PROVIDERS = {
     "phi3": {
         "platform": "ollama",
         "api_url": "http://localhost:11434/api/chat",
+        "api_key": None,  # Ollama本地模型不需要API key
         "auth_header": None,
         "message_format": "ollama",
         "max_tokens": 4096,
@@ -64,6 +68,7 @@ class ModelConfigProvider:
             return {
                 "platform": "openai_compatible",
                 "api_url": "https://api.openai.com/v1/chat/completions",
+                "api_key": None,  # 需要用户自行配置
                 "auth_header": "Bearer",
                 "message_format": "openai",
                 "max_tokens": 4096,

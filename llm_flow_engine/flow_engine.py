@@ -84,7 +84,7 @@ class FlowEngine:
                 'error': str(e)
             }
     
-    async def execute_simple_flow(self, user_input: str, api_key: str = None) -> Dict[str, Any]:
+    async def execute_simple_flow(self, user_input: str) -> Dict[str, Any]:
         """
         执行简单的用户输入 -> LLM处理 -> 输出流程
         """
@@ -94,7 +94,6 @@ executors:
     func: llm_simple_call
     custom_vars:
       user_input: "{user_input}"
-      api_key: "{api_key or 'your-api-key'}"
 """
         return await self.execute_dsl(simple_dsl, {'input': user_input})
 

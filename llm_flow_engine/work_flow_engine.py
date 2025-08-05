@@ -23,6 +23,6 @@ async def execute_dsl(dsl: str, inputs: dict = None, dsl_type: str = 'yaml'):
     """执行DSL的快捷方法"""
     return await flow_engine.execute_dsl(dsl, inputs, dsl_type)
 
-async def quick_llm_call(user_input: str, api_key: str = None):
+async def quick_llm_call(user_input: str):
     """快速LLM调用的快捷方法"""
-    return await flow_engine.execute_simple_flow(user_input, api_key)
+    return await flow_engine.execute_simple_flow(user_input)

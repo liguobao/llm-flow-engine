@@ -48,6 +48,8 @@ class Executor:
             # 移除不需要的参数，避免传递给llm_simple_call
             final_kwargs.pop('workflow_input', None)
             final_kwargs.pop('_global_context', None)
+            final_kwargs.pop('prompt', None)  # llm_simple_call 不支持 prompt 参数
+            
             # 确保上游参数作为 user_input
             if args:
                 args = (args[0],)  # 只取第一个参数作为 user_input

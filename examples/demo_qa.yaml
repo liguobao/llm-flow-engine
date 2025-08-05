@@ -39,53 +39,25 @@ executors:
       model: "qwen2.5:0.5b"
     depends_on: ["text_processing"]
 
-  # 使用增强的combine_outputs进行智能参数传递和结构化组合
-  - name: combine_answers
-    type: "task"
-    func: combine_outputs
-    custom_vars:
-      combine_method: "structured"
-      inputs:
-        - "${model1_answer.output}"
-        - "${model2_answer.output}"
-        - "${model3_answer.output}"
-      input_mapping:
-        0: "Gemma3-1B模型回答"
-        1: "Qwen2.5-0.5B模型回答"
-        2: "DeepSeek-R1-1.5B模型回答"
-      prompt_template: "请基于以下三个AI模型的回答，汇总分析什么是人工智能，提取共同点和不同观点："
-    depends_on: ["model1_answer", "model2_answer", "model3_answer"]
+
 
   # 使用新的引用格式进行深度分析
   - name: deep_analysis
     type: "task"
     func: llm_simple_call
     custom_vars:
-      user_input: "请对第一个模型的回答进行深度分析：${model1_answer.output}"
-      model: "gemma3:4b"
-    depends_on: ["model1_answer"]
+      user_input: "请对以下回答进行深度分析，提取关键信息和观点：${model1_answer.output} \n\n ${model2_answer.output} \n\n ${model3_answer.output} "
+      model: "gemma3:1b"
+    depends_on: ["model1_answer", "model2_answer", "model3_answer"]
 
-  # 数据流转换，为最终汇总做准备
-  - name: prepare_summary
-    type: "task"
-    func: data_flow_transform
-    custom_vars:
-      input_data: "${combine_answers.output}"
-      transform_rules:
-        - type: "format"
-          template: "多模型分析结果：\n{data}\n\n深度分析：\n${deep_analysis.output}"
-        - type: "aggregate"
-          method: "join"
-          separator: "\n\n=== 深度分析汇总 ===\n\n"
-    depends_on: ["combine_answers", "deep_analysis"]
 
   - name: summary_step
     type: "task"
     func: llm_simple_call
     custom_vars:
-      user_input: "${prepare_summary.output}"
-      model: "gemma3:4b"
-    depends_on: ["prepare_summary"]
+      user_input: "请对以下深度分析进行总结：${deep_analysis.output}"
+      model: "deepseek-r1:7b"
+    depends_on: ["deep_analysis"]
 
 output:
   type: "end"
@@ -97,7 +69,5 @@ output:
       gemma3_1b: "${model1_answer.output}"
       qwen2_5_0_5b: "${model2_answer.output}"
       deepseek_r1_1_5b: "${model3_answer.output}"
-    structured_analysis: "${combine_answers.output}"
     deep_analysis: "${deep_analysis.output}"
-    prepared_summary: "${prepare_summary.output}"
     final_result: "${summary_step.output}"
