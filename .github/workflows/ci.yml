@@ -30,7 +30,13 @@ jobs:
         pip install -r requirements.txt
         
     - name: 🧪 Run validation tests
-      run: python validate_project.py
+      run: |
+        if [ "$RUNNER_OS" == "Windows" ]; then
+          python validate_project_win.py
+        else
+          python validate_project.py
+        fi
+      shell: bash
         
     - name: 📊 Test import
       run: |
