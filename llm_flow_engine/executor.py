@@ -39,7 +39,16 @@ class Executor:
         # 如果有位置参数传入（来自上游依赖），优先使用它们，否则使用custom_vars
         # 处理参数，确保不会有重复的参数传递
         final_kwargs = {k: v for k, v in self.custom_vars.items()}
-        final_kwargs.update(kwargs)
+        
+        # 获取函数签名，过滤不需要的参数
+        import inspect
+        func_signature = inspect.signature(self.func)
+        func_param_names = set(func_signature.parameters.keys())
+        
+        # 只添加函数实际需要的参数
+        for key, value in kwargs.items():
+            if key in func_param_names:
+                final_kwargs[key] = value
 
         # 如果 func 是 llm_simple_call，处理特殊情况
         if self.func.__name__ == 'llm_simple_call':
@@ -50,15 +59,18 @@ class Executor:
             final_kwargs.pop('_global_context', None)
             final_kwargs.pop('prompt', None)  # llm_simple_call 不支持 prompt 参数
             
-            # 确保上游参数作为 user_input
-            if args:
-                args = (args[0],)  # 只取第一个参数作为 user_input
-                logger.debug(f"执行器 {self.name} 开始运行，user_input: {args[0]}, 额外参数: {final_kwargs}")
-            else:
-                # 没有上游参数时，使用 custom_vars 中的 user_input
-                user_input_value = self.custom_vars.get('user_input')
-                args = (user_input_value,)
-                logger.debug(f"执行器 {self.name} 开始运行，参数: {args}, {final_kwargs}")
+            # LLM调用总是使用custom_vars中的user_input，而不是上游参数
+            # 因为user_input已经在workflow解析时包含了正确的占位符替换
+            user_input_value = self.custom_vars.get('user_input')
+            if user_input_value is None:
+                # 如果没有user_input，则使用上游参数（但这应该很少发生）
+                if args and args[0] is not None:
+                    user_input_value = str(args[0])
+                else:
+                    user_input_value = ""
+            
+            args = (user_input_value,)
+            logger.debug(f"执行器 {self.name} 开始运行，user_input: {args[0]}, 额外参数: {final_kwargs}")
         elif self.func.__name__ == 'text_process':
             # text_process 函数需要保留 workflow_input 参数
             final_kwargs.pop('_global_context', None)
@@ -87,6 +99,20 @@ class Executor:
         # 在运行时重新解析 custom_vars
         self.custom_vars = {key: resolve_placeholders(val, execution_context) for key, val in self.custom_vars.items()}
         logger.debug(f"运行时重新解析后的 custom_vars: {self.custom_vars}")
+        
+        # 对于 llm_simple_call，需要在占位符解析后重新构建参数
+        if self.func.__name__ == 'llm_simple_call':
+            user_input_value = self.custom_vars.get('user_input')
+            if user_input_value is None:
+                # 如果没有user_input，则使用上游参数（但这应该很少发生）
+                if args and args[0] is not None:
+                    user_input_value = str(args[0])
+                else:
+                    user_input_value = ""
+            
+            args = (user_input_value,)
+            logger.debug(f"占位符解析后重新构建 llm_simple_call 参数，user_input: {args[0]}")
+        
         
         for attempt in range(self.retry + 1):
             try:

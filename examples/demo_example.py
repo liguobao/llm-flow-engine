@@ -13,7 +13,7 @@ from loguru import logger
 from llm_flow_engine import FlowEngine, ModelConfigProvider
 
 logger.remove()
-logger.add(sys.stderr, level="INFO")
+logger.add(sys.stderr, level="DEBUG")
 
 async def demo_basic_usage():
     """演示如何使用 LLM Flow Engine"""
@@ -71,6 +71,15 @@ async def demo_basic_usage():
     
     if flow_result['success']:
         logger.info("✅ 执行成功!")
+        
+        # 显示中间步骤的详细结果
+        logger.info("🔍 详细执行结果:")
+        for step_name, result in flow_result['results'].items():
+            if result.status == 'success':
+                logger.info(f"  ✅ {step_name}: {result.output[:100]}..." if len(str(result.output)) > 100 else f"  ✅ {step_name}: {result.output}")
+            else:
+                logger.error(f"  ❌ {step_name}: {result.error}")
+        
         # 显示工作流最终输出
         if 'workflow_output' in flow_result['results']:
             output_step = flow_result['results']['workflow_output']

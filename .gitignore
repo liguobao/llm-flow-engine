@@ -27,3 +27,4 @@
 *.pid
 dist/
 build/
+*/__pycache__/**
