@@ -74,8 +74,10 @@ jobs:
         try:
             import llm_flow_engine
             from llm_flow_engine import FlowEngine, ModelConfigProvider
-            print('✅ Import test passed on ${{ matrix.os }} Python ${{ matrix.python-version }}')
+            print('[PASS] Import test passed on ${{ matrix.os }} Python ${{ matrix.python-version }}')
         except ImportError as e:
-            print(f'❌ Import test failed: {e}')
+            print(f'[FAIL] Import test failed: {e}')
             sys.exit(1)
         "
+      env:
+        PYTHONIOENCODING: utf-8

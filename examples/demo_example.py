@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 LLM Flow Engine 使用演示 - 三步上手
 """

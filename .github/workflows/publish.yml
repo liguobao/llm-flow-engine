@@ -58,6 +58,8 @@ jobs:
         echo "## 🔗 Links" >> release_notes.md
         echo "- [PyPI Package](https://pypi.org/project/llm-flow-engine/${VERSION}/)" >> release_notes.md
         echo "- [GitHub Release](https://github.com/liguobao/llm-flow-engine/releases/tag/v${VERSION})" >> release_notes.md
+      env:
+        PYTHONIOENCODING: utf-8
         
     - name: 📤 Upload release notes
       uses: actions/upload-artifact@v3
