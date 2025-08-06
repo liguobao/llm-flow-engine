@@ -20,7 +20,7 @@ class ContentCreationAgent:
     """内容创作Agent - 使用LLM Flow Engine工作流"""
     
     def __init__(self):
-        self.model = "gemma3:4b"
+        self.model = "gemma3:1b"
         self.kb_name = "content_writing_kb"
         self.engine = FlowEngine()
         self.temp_dir = tempfile.mkdtemp()
@@ -115,12 +115,19 @@ alternative solution
         self.engine.register_function("save_content", self._save_content)
         self.engine.register_function("optimize_for_seo", self._optimize_for_seo)
         self.engine.register_function("create_social_variants", self._create_social_variants)
+        self.engine.register_function("text_merge", self._text_merge)
         
         self.initialized = True
         print("✅ 内容创作Agent（DSL工作流模式）初始化完成")
     
-    async def _save_content(self, content: str, filename: str) -> str:
+    async def _save_content(self, content: str = None, filename: str = None, **kwargs) -> str:
         """保存内容到文件"""
+        # 从kwargs中获取参数（如果没有通过位置参数传递）
+        if content is None:
+            content = kwargs.get('content', '')
+        if filename is None:
+            filename = kwargs.get('filename', 'untitled.md')
+            
         file_path = os.path.join(self.temp_dir, filename)
         await file_write(file_path, content)
         return f"内容已保存到：{file_path}"
@@ -137,6 +144,16 @@ alternative solution
         for platform in platform_list:
             variants[platform.strip()] = f"{platform.strip()}版本：{content[:100]}..."
         return json.dumps(variants, ensure_ascii=False, indent=2)
+    
+    def _text_merge(self, separator: str = "
+", **kwargs):
+        """合并多个文本片段"""
+        try:
+            texts = kwargs.get('texts', [])
+            result = separator.join(texts)
+            return result
+        except Exception as e:
+            raise ValueError(f"文本合并失败: {e}")
     
     async def create_blog_article(self, topic: str, article_type: str = "technical") -> str:
         """创建博客文章的完整工作流"""
@@ -161,7 +178,7 @@ executors:
   # 步骤1: 查找相关模板
   - name: find_template
     type: "task"
-    func: knowledge_base_query
+    func: knowledge_base_search
     custom_vars:
       kb_name: "{self.kb_name}"
       query: "${{blog_request.type}} 模板"
@@ -327,7 +344,7 @@ executors:
   # 步骤1: 获取营销模板
   - name: get_marketing_template
     type: "task"
-    func: knowledge_base_query
+    func: knowledge_base_search
     custom_vars:
       kb_name: "{self.kb_name}"
       query: "营销文案模板"
