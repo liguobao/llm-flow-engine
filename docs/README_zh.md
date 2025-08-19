@@ -294,6 +294,12 @@ python validate_project.py
 
 如果您觉得这个项目有帮助，请考虑给它一个 star！⭐
 
+## 💝 赞助者
+
+特别感谢以下慷慨的赞助者，他们帮助这个项目更顺利地运行：
+
+- **[vccddd](https://github.com/vccddd)** - 提供免费 API key 并托管 [AIProxy](https://github.com/4ba-Co/AIProxy) 服务，实现无缝的 AI 模型访问
+
 ---
 
 由 LLM Flow Engine 团队用 ❤️ 制作

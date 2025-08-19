@@ -290,4 +290,10 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 If you find this project helpful, please consider giving it a star! ⭐
 
+## 💝 Sponsors
+
+Special thanks to our generous sponsors who help this project run smoothly:
+
+- **[vccddd](https://github.com/vccddd)** - For providing free API keys and hosting the [AIProxy](https://github.com/4ba-Co/AIProxy) service that enables seamless AI model access
+
 ---
