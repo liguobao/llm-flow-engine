@@ -132,13 +132,15 @@ provider.add_single_model(
 )
 
 # Add custom model
-provider.add_single_model(
-    model_name="custom-llm",
-    platform="openai_compatible",
-    api_url="https://your-api.com/v1/chat/completions",
-    api_key="your-api-key",
-    max_tokens=2048
-)
+model_provider = ModelConfigProvider()
+platform = "openai"
+demo_host = "https://ai-proxy.4ba-cn.co/openrouter/v1/chat/completions"
+demo_free_key = "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"
+
+model_list = ["openai/gpt-oss-20b:free","moonshotai/kimi-k2:free", "google/gemma-3-12b-it:free","z-ai/glm-4.5-air:free"]
+for model in model_list:
+    model_provider.add_single_model(model_name=model, platform=platform, 
+        api_url=demo_host, api_key=demo_free_key)
 ```
 
 ## 📝 DSL Workflow Format

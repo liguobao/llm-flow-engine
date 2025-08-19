@@ -24,20 +24,20 @@ async def demo_basic_usage():
     logger.info("第1步: 配置模型")
     
     # 自动发现本地Ollama模型
-    model_provider = await ModelConfigProvider.from_host_async(
-        api_host="http://127.0.0.1:11434", 
-        platform="ollama"
-    )
+    # model_provider = await ModelConfigProvider.from_host_async(
+    #     api_host="http://127.0.0.1:11434", 
+    #     platform="ollama"
+    # )
+
+    model_provider = ModelConfigProvider()
+    platform = "openai"
+    demo_host = "https://ai-proxy.4ba-cn.co/openrouter/v1/chat/completions"
+    demo_free_key = "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"
     
-    # (可选) 手动添加其他模型
-    model_provider.add_single_model(
-        model_name="gpt-4",
-        platform="openai", 
-        api_url="https://api.openai.com/v1/chat/completions",
-        api_key="your-api-key",  # 替换为真实API key
-        max_tokens=4096
-    )
-    
+    model_list = ["openai/gpt-oss-20b:free","moonshotai/kimi-k2:free", "google/gemma-3-12b-it:free","z-ai/glm-4.5-air:free"]
+    for model in model_list:
+        model_provider.add_single_model(model_name=model, platform=platform, 
+            api_url=demo_host, api_key=demo_free_key)
     engine = FlowEngine(model_provider)
     models = engine.model_provider.list_supported_models()
     total = sum(len(models[p]) for p in models)

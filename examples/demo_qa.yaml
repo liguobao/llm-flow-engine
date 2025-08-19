@@ -20,7 +20,7 @@ executors:
     func: llm_simple_call
     custom_vars:
       user_input: "${text_processing.output}"
-      model: "gemma3:1b"
+      model: "openai/gpt-oss-20b:free"
     depends_on: ["text_processing"]
     timeout: 30
     retry: 1
@@ -31,7 +31,7 @@ executors:
     func: llm_simple_call
     custom_vars:
       user_input: "${text_processing.output}"
-      model: "qwen2.5:0.5b"
+      model: "z-ai/glm-4.5-air:free"
     depends_on: ["text_processing"]
     timeout: 30
     retry: 1
@@ -44,7 +44,7 @@ executors:
     func: llm_simple_call
     custom_vars:
       user_input: "请简要分析以下两个回答的关键信息：\n1. ${model1_answer.output}\n\n2. ${model2_answer.output}"
-      model: "qwen2.5:0.5b"
+      model: "openai/gpt-oss-20b:free"
     depends_on: ["model1_answer", "model2_answer"]
     timeout: 120
     retry: 2
