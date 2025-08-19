@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "llm-flow-engine"
-version = "0.7.3"
+version = "0.7.4"
 description = "A DSL-based LLM workflow engine that supports multi-model collaboration, dependency management, and result aggregation"
 readme = "README.md"
 authors = [
