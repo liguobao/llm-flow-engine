@@ -26,7 +26,10 @@ A DSL-based LLM workflow engine that supports multi-model collaboration, depende
 
 ### Installation
 
+- [PyPI](https://pypi.org/project/llm-flow-engine/)
+
 ```bash
+
 pip install llm-flow-engine
 ```
 
@@ -64,7 +67,7 @@ async def main():
         func: llm_simple_call
         custom_vars:
           user_input: "${workflow_input.question}"
-          model: "llama2"
+          model: "gpt-oss-20b"
     
     output:
       type: "end"
@@ -120,24 +123,20 @@ provider = await ModelConfigProvider.from_host_async(
 
 ```python
 # Create provider and add models manually
-provider = ModelConfigProvider()
-
-# Add OpenAI model
-provider.add_single_model(
-    model_name="gpt-4",
-    platform="openai",
-    api_url="https://api.openai.com/v1/chat/completions",
-    api_key="your-api-key",
-    max_tokens=4096
-)
-
-# Add custom model
 model_provider = ModelConfigProvider()
+
 platform = "openai"
+
+
+# free model proxy on cn
 demo_host = "https://ai-proxy.4ba-cn.co/openrouter/v1/chat/completions"
+
+# free model proxy 
+# demo_host = "https://openrouter.ai/v1/chat/completions"
+
 demo_free_key = "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"
 
-model_list = ["openai/gpt-oss-20b:free","moonshotai/kimi-k2:free", "google/gemma-3-12b-it:free","z-ai/glm-4.5-air:free"]
+model_list = ["openai/gpt-oss-20b:free", "moonshotai/kimi-k2:free", "google/gemma-3-12b-it:free", "z-ai/glm-4.5-air:free"]
 for model in model_list:
     model_provider.add_single_model(model_name=model, platform=platform, 
         api_url=demo_host, api_key=demo_free_key)
@@ -260,6 +259,7 @@ python examples/package_demo.py
 
 ```bash
 git clone https://github.com/liguobao/llm-flow-engine.git
+
 cd llm-flow-engine
 
 # Install development dependencies
@@ -272,12 +272,6 @@ pytest
 black .
 ```
 
-### Project Validation
-
-```bash
-# Validate project structure and configuration
-python validate_project.py
-```
 
 ## 📄 License
 
@@ -297,4 +291,3 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 If you find this project helpful, please consider giving it a star! ⭐
 
 ---
-
